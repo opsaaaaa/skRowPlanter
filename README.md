@@ -38,6 +38,7 @@ I recommend adding these permissions to builders or admin type groups:
 ```
 Here is the full list of permissions and what they allow:
 ```
+- skript.row.user - /row
 - skript.row.user.help - /row help
 - skript.row.user.plant - /row plant
 - skript.row.user.place - /row place
