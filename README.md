@@ -8,17 +8,17 @@ Stand at one end of a field holding some seeds. point your curser to the other e
 
 ## COMMANDS
 
-..* `/row plant` Used to plants a row of crops using the items from the players hand.
+* `/row plant` Used to plants a row of crops using the items from the players hand.
 
-..* `/row place` Places a row of blocks from the players hand on the ground. note that it uses the block you're standing on as the ground, for example if you where standing on stone it will only place rails on stone and will skip over grass or dirt. this trick is also used when planting sugarcane.
+* `/row place` Places a row of blocks from the players hand on the ground. note that it uses the block you're standing on as the ground, for example if you where standing on stone it will only place rails on stone and will skip over grass or dirt. this trick is also used when planting sugarcane.
 
-..* `/row oneclick [ true | false | toggle ]` turns one click mode on and off. with click mode on holding shift right click will run `/row plant`, and shift left click will run `/row place`.
+* `/row oneclick [ true | false | toggle ]` turns one click mode on and off. with click mode on holding shift right click will run `/row plant`, and shift left click will run `/row place`.
 
-..* `/row free [block] [ground]` this command places a row without the item cost and allows you to set the parmiters manualy. if you leave the arguments blank it will take `[block]` from your hand and `[ground]` from the block your standing on.
+* `/row free [block] [ground]` this command places a row without the item cost and allows you to set the parmiters manualy. if you leave the arguments blank it will take `[block]` from your hand and `[ground]` from the block your standing on.
 
-..* `/row help` displays help.
+* `/row help` displays help.
 
-..* `/row version` displays version.
+* `/row version` displays version.
 
 ## PERMISSIONS
 
@@ -54,10 +54,10 @@ https://forums.skunity.com/resources/aliases.27/
 
 ## INSTALLATION
 
-..* Make sure skript is installed. If not install it. https://docs.skunity.com/downloads
-..* Install tim740's skAliases. https://forums.skunity.com/resources/aliases.27/
-..* Downlaod row_planter.sk and put it in `yourServer/plugins/skript/scripts`.
-..* Run `/skript reload all`.
+* Make sure skript is installed. If not install it. https://docs.skunity.com/downloads
+* Install tim740's skAliases. https://forums.skunity.com/resources/aliases.27/
+* Downlaod row_planter.sk and put it in `yourServer/plugins/skript/scripts`.
+* Run `/skript reload all`.
 
 ### version notes
 
