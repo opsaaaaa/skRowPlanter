@@ -1,4 +1,4 @@
-# last updated 2018 march 1st
+# last updated 2018 march 2st
 # minecraft version 1.12.2
 
 # ## WHAT IS ROW PLANTER?
@@ -61,13 +61,14 @@
 # * Install tim740's skAliases. https://forums.skunity.com/resources/aliases.27/
 # * Downlaod row_planter.sk and put it in `yourServer/plugins/skript/scripts`.
 # * Run `/skript reload all`.
+# * Remember yo add the permissions to your permissions manager
 #
 # ### version notes
 #
 # I have tested Row Planter v18.3 on minecraft version 1.12.2 using Skript 2.2 bensku-dev33 I havent tested it on other versons. 18.3 is just the year and month btw.
 
 options:
-  Version: V18.3 # version is year.month.day
+  Version: V18.3-c # version is year.month.day
   nopermission: you dont have that permission.
   msgprefix: &7[&aRow Planter&7]&e
   defaultOneClickRow: false
@@ -79,20 +80,26 @@ variables:
 # this function is what dose the heavy lifing, looping between you and what your looking at and takes items away as placed
 function itemPlaceLineOn(b: material , o:material , i:item, p:player, m:text):
   set {_p} to {_p} parsed as player
+  set {_o} to {_o} parsed as material
+  set {_b} to {_b} parsed as material
+  set {_i} to {_i} parsed as item
   set {_plantCount} to 0
   if {_p} is holding {_i}:
     loop blocks between {_p}'s targeted block and the block at {_p}:
       {_p} is holding {_i} #{_i}
       wait a tick
-
-      loop-block is {_o}: # {_o}
+      # the "or soil" if i pass in soil as a material it gets reduced to 60:0 instead of 60:0-8
+      # witch means it wont plant on wet soil. so i have to add it here so it will include 60:1-8
+      loop-block is {_o} or wet_soil: # i am so annoyed about "or wet_soil" it ticks me off.
+        # send "soil" to {_p} for testing
         block above loop-block is air
         set block above loop-block to {_b} # {_b}
         add 1 to {_plantCount}
         remove {_i} from {_p}
 
       loop-block is air:
-        block below loop-block is {_o} #{_o}
+        # send "air" to {_p} for testing
+        block below loop-block is {_o} or soil #i am so annoyed that i have to add these extra or condisions
         set loop-block to {_b} # {_b}
         add 1 to {_plantCount}
         remove {_i} from {_p}
@@ -119,19 +126,30 @@ function placeLineOn(b: material , o:material, p:player, m:text):
 # returns the block the player is standing on
 function getStandingOn(p:player) :: material:
   set {_p} to {_p} parsed as player
-  return the block below {_p}
+  if the block at {_p} is soil:
+    return the block at {_p}
+  if the block at {_p} is soulsand:
+    return the block at {_p}
+  else:
+    return the block below {_p}
 
 # it returns the item type the player is holding
 function getItemHolding(p:player) :: material:
   set {_p} to {_p} parsed as player
   return type of {_p}'s held item
 
+# some commands for testing
+command /standingon:
+  trigger:
+    send "you are standing on %getStandingOn(player)%"
+command /holding:
+  trigger:
+    send "you are holding %getItemHolding(player)%"
 
-# world edit like command for row place
+# world edit like command for row place, i made it for testing be decided to leave it in
 command //rowplace [<material>] [<material>]:
   permission: skript.row.admin.free
   description: places a line of blocks on a kind of block between you and the point your looking at.
-  usage: //rowplace <block to be placed> [block to place on]
   aliases: //rowfree, //rowplant
   trigger:
     if arg 1 is not set:
@@ -190,21 +208,21 @@ command /rowplanter [<text>] [<text>] [<material>]:
         if player is on ground:
           send "{@msgprefix} creating row..."
           if player is holding wheat_seeds: # test if they are holding the right item then run the loop with the correct stuff
-            itemPlaceLineOn(freshly_planted_wheat, farmland, wheat_seeds, player, "wheat planted.")
+            itemPlaceLineOn(freshly_planted_wheat, soil, wheat_seeds, player, "wheat planted.")
           else if player is holding beetroot_seeds:
-            itemPlaceLineOn(beetroot_block, farmland, beetroot_seeds, player, "beets planted.")
-          else if player is holding carrots:
-            itemPlaceLineOn(carrot_plant, farmland, carrot_item, player, "carrots planted.")
+            itemPlaceLineOn(beetroot_block, soil, beetroot_seeds, player, "beets planted.")
+          else if player is holding carrot:
+            itemPlaceLineOn(carrot_plant, soil, carrot_item, player, "carrots planted.")
           else if player is holding potato:
-            itemPlaceLineOn(potato_plant, farmland, potato_item, player, "potatoes planted.")
+            itemPlaceLineOn(potato_plant, soil, potato_item, player, "potatoes planted.")
           else if player is holding nether_warts:
             itemPlaceLineOn(nether_wart_plant, soulsand, nether_wart_item, player, "warts planted.")
           else if player is holding pumpkin_seeds:
-            itemPlaceLineOn(pumpkin_stem, farmland, pumpkin_seeds, player, "pumpkins planted.")
+            itemPlaceLineOn(pumpkin_stem, soil, pumpkin_seeds, player, "pumpkins planted.")
           else if player is holding melon_seeds:
-            itemPlaceLineOn(melon_stem, farmland, melon_seeds, player, "melons planted.")
+            itemPlaceLineOn(melon_stem, soil, melon_seeds, player, "melons planted.")
           else if player is holding cane_item:
-            itemPlaceLineOn(cane_block, farmland, getStandingOn(player), player, "sugarcane planted.")
+            itemPlaceLineOn(cane_block, getStandingOn(player), cane_item , player, "sugarcane planted.")
           else:
             send "{@msgprefix} Sorry, I cant plant the item you are holding!"
             if has permission "skript.row.user.place":
@@ -231,7 +249,12 @@ command /rowplanter [<text>] [<text>] [<material>]:
         if player is on ground:
           # placeLineOn(getItemHolding(player), getStandingOn(player), player, "blocks changed.")
           send "{@msgprefix} creating row..."
-          make player execute command "//rowplace %arg 2% %arg 3%"
+          if arg 2 is not set:
+            make player execute command "//rowplace"
+          else if arg 3 is not set:
+            make player execute command "//rowplace %arg 2%"
+          else:
+            make player execute command "//rowplace %arg 2% %arg 3%"
         else: # if this runs it means the play is flying
           send "{@msgprefix} I can't get the block you're standing on if you're flying."
       else:
