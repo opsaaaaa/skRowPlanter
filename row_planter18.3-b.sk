@@ -1,0 +1,264 @@
+# last updated 2018 march 1st
+# minecraft version 1.12.2
+
+# ## WHAT IS ROW PLANTER?
+#
+# Row planter is a skript plugin that plants a row of crops in the direction the player is looking. It can also place a line of rails or fences or most other blocks.
+#
+# ## TUTORIAL
+#
+# Stand at one end of a field holding some seeds. point your curser to the other end of the field and type `/row plant`. or you could type `row oneclick true`, look over that field then hold shift and right click!
+#
+# ## COMMANDS
+#
+# * `/row plant` Used to plants a row of crops using the items from the players hand.
+#
+# * `/row place` Places a row of blocks from the players hand on the ground. note that it uses the block you're standing on as the ground, for example if you where standing on stone it will only place rails on stone and will skip over grass or dirt. this trick is also used when planting sugarcane.
+#
+# * `/row oneclick [ true | false | toggle ]` turns one click mode on and off. with click mode on holding shift right click will run `/row plant`, and shift left click will run `/row place`.
+#
+# * `/row free [block] [ground]` this command places a row without the item cost and allows you to set the parmiters manualy. if you leave the arguments blank it will take `[block]` from your hand and `[ground]` from the block your standing on.
+#
+# * `/row help` displays help.
+#
+# * `/row version` displays version.
+#
+# ## PERMISSIONS
+#
+# You will need to add a few permissions to your permissions plugin.
+#
+# If your running a spigot server and you don't know what permissions are then you need to learn what they are and how to use them. i would say its the most important thing to know when it comes to bukket servers.
+#
+# I recommend adding these permissions to users or members type groups:
+# ```
+# - skript.row.user.*
+# - skript.row.user
+# ```
+# I recommend adding these permissions to builders or admin type groups:
+# ```
+# - skript.row.admin.*
+# - skript.row.admin
+# ```
+# Here is the full list of permissions and what they allow:
+# ```
+# - skript.row.user.help - /row help
+# - skript.row.user.plant - /row plant
+# - skript.row.user.place - /row place
+# - skript.row.user.oneclick - /row oneclick
+# - skript.row.admin.free - /row free
+# ```
+# ## DEPENDENCIES
+#
+# Row Planter depends on tim740's skAliases, which if you don't have and you skript you should get anyway.
+#
+# https://github.com/tim740/skAliases/releases/
+#
+# https://forums.skunity.com/resources/aliases.27/
+#
+# ## INSTALLATION
+#
+# * Make sure skript is installed. If not install it. https://docs.skunity.com/downloads
+# * Install tim740's skAliases. https://forums.skunity.com/resources/aliases.27/
+# * Downlaod row_planter.sk and put it in `yourServer/plugins/skript/scripts`.
+# * Run `/skript reload all`.
+#
+# ### version notes
+#
+# I have tested Row Planter v18.3 on minecraft version 1.12.2 using Skript 2.2 bensku-dev33 I havent tested it on other versons. 18.3 is just the year and month btw.
+
+options:
+  Version: V18.3 # version is year.month.day
+  nopermission: you dont have that permission.
+  msgprefix: &7[&aRow Planter&7]&e
+  defaultOneClickRow: false
+
+variables:
+  # one click mode on or off, its for when you click while holding seeds or rails it will automaticly place them
+  {oneClickRow.%player%} = {@defaultOneClickRow}
+
+# this function is what dose the heavy lifing, looping between you and what your looking at and takes items away as placed
+function itemPlaceLineOn(b: material , o:material , i:item, p:player, m:text):
+  set {_p} to {_p} parsed as player
+  set {_plantCount} to 0
+  if {_p} is holding {_i}:
+    loop blocks between {_p}'s targeted block and the block at {_p}:
+      {_p} is holding {_i} #{_i}
+      wait a tick
+
+      loop-block is {_o}: # {_o}
+        block above loop-block is air
+        set block above loop-block to {_b} # {_b}
+        add 1 to {_plantCount}
+        remove {_i} from {_p}
+
+      loop-block is air:
+        block below loop-block is {_o} #{_o}
+        set loop-block to {_b} # {_b}
+        add 1 to {_plantCount}
+        remove {_i} from {_p}
+  send "&e%{_plantCount}% %{_m}% " to {_p}
+
+# this function is what dose the heavy lifing, looping between you and what your looking at
+function placeLineOn(b: material , o:material, p:player, m:text):
+  set {_p} to {_p} parsed as player
+  set {_plantCount} to 0
+  loop blocks between {_p}'s targeted block and the block at {_p}:
+    wait a tick
+
+    loop-block is {_o}: # {_o}
+      block above loop-block is air
+      set block above loop-block to {_b} # {_b}
+      add 1 to {_plantCount}
+
+    loop-block is air:
+      block below loop-block is {_o} #{_o}
+      set loop-block to {_b} # {_b}
+      add 1 to {_plantCount}
+  send "&e%{_plantCount}% %{_m}% " to {_p}
+
+# returns the block the player is standing on
+function getStandingOn(p:player) :: material:
+  set {_p} to {_p} parsed as player
+  return the block below {_p}
+
+# it returns the item type the player is holding
+function getItemHolding(p:player) :: material:
+  set {_p} to {_p} parsed as player
+  return type of {_p}'s held item
+
+
+# world edit like command for row place
+command //rowplace [<material>] [<material>]:
+  permission: skript.row.admin.free
+  description: places a line of blocks on a kind of block between you and the point your looking at.
+  usage: //rowplace <block to be placed> [block to place on]
+  aliases: //rowfree, //rowplant
+  trigger:
+    if arg 1 is not set:
+      placeLineOn(getItemHolding(player), getStandingOn(player), player, "blocks changed.")
+    else if arg 2 is not set:
+      placeLineOn(arg 1, getStandingOn(player), player, "blocks changed.")
+    else:
+      placeLineOn(arg 1, arg 2 , player, "blocks changed.")
+
+
+# the main command
+command /rowplanter [<text>] [<text>] [<material>]:
+  permission: skript.row.user
+  description: Places a row of blocks from your hand.
+  usage: /row [ plant | place | oneclick | free | help ]
+  aliases: /row, /plant
+  trigger:
+    set {_usage} to "&c/row [ plant | place | oneclick | free | help ]"
+    # the help sub command
+    if arg 1 is "help":
+      if player has permission "skript.row.user.help":
+        wait 8 ticks
+        send "{@msgprefix} rowplanter is a skript plugin that plants a row of seeds from your hand with a command or one one click."
+        send "  "
+        send "&7[&aTutorial&7]&e Fist grab some seeds, then look over your farmland and type /row plant"
+        send "  "
+        send "&7[&aSub-Commands&7] %{_usage}%"
+        send "&cplant&7 -&e is for planting rows of crops. like potatos or sugercane."
+        send "&cplace&7 -&e is for placing rows of blocks. like rails or fences."
+        send "&coneclick&7 -&e if its on then you can just click with the item inhand instead of using the commands."
+        send "&cfree&7 -&e is for admins and builders to place without the item cost."
+        send "&chelp&7 -&e displays this."
+        send "&cversion&7 -&e displays the version of Row Planter your using"
+      else:
+        send "&c{@nopermission} skript.row.user.help"
+
+    # the oneclick sub command
+    else if arg 1 is "oneclick": # toggles the auto plant onclick
+      if player has permission "skript.row.user.oneclick":
+        if arg 2 is "true":
+          set {oneClickRow.%player%} to true
+        else if arg 2 is "false":
+          set {oneClickRow.%player%} to false
+        else if arg 2 is "toggle":
+          if {oneClickRow.%player%} is true:
+            set {oneClickRow.%player%} to false
+          else:
+            set {oneClickRow.%player%} to true
+        send "{@msgprefix} one click mode set to %{oneClickRow.%player%}%"
+      else:
+        send "&c{@nopermission} skript.row.user.oneclick"
+
+    # the plant subcommand, plants a row of crops
+    else if arg 1 is "plant":
+      if has permission "skript.row.user.plant":
+        if player is on ground:
+          send "{@msgprefix} creating row..."
+          if player is holding wheat_seeds: # test if they are holding the right item then run the loop with the correct stuff
+            itemPlaceLineOn(freshly_planted_wheat, farmland, wheat_seeds, player, "wheat planted.")
+          else if player is holding beetroot_seeds:
+            itemPlaceLineOn(beetroot_block, farmland, beetroot_seeds, player, "beets planted.")
+          else if player is holding carrots:
+            itemPlaceLineOn(carrot_plant, farmland, carrot_item, player, "carrots planted.")
+          else if player is holding potato:
+            itemPlaceLineOn(potato_plant, farmland, potato_item, player, "potatoes planted.")
+          else if player is holding nether_warts:
+            itemPlaceLineOn(nether_wart_plant, soulsand, nether_wart_item, player, "warts planted.")
+          else if player is holding pumpkin_seeds:
+            itemPlaceLineOn(pumpkin_stem, farmland, pumpkin_seeds, player, "pumpkins planted.")
+          else if player is holding melon_seeds:
+            itemPlaceLineOn(melon_stem, farmland, melon_seeds, player, "melons planted.")
+          else if player is holding cane_item:
+            itemPlaceLineOn(cane_block, farmland, getStandingOn(player), player, "sugarcane planted.")
+          else:
+            send "{@msgprefix} Sorry, I cant plant the item you are holding!"
+            if has permission "skript.row.user.place":
+              send "&e try &c/row place"
+        else: # if this runs it means the play is flying
+          send "{@msgprefix} I can't get the block you're standing on if you're flying."
+      else:
+        send "&c{@nopermission} skript.row.user.plant"
+
+    # the place subcommand, places stuff like rails in a row.
+    else if arg 1 is "place":           # the row place command
+      if has permission "skript.row.user.place":
+        if player is on ground:
+          send "{@msgprefix} creating row..."
+          itemPlaceLineOn(getItemHolding(player), getStandingOn(player), getItemHolding(player), player, "blocks changed.")
+        else: # if this runs it means the play is flying
+          send "{@msgprefix} I can't get the block you're standing on if you're flying."
+      else:
+        send "&c{@nopermission} skript.row.user.place"
+
+    # the free subcommand, its place but without cost
+    else if arg 1 is "free":
+      if has permission "skript.row.admin.free":
+        if player is on ground:
+          # placeLineOn(getItemHolding(player), getStandingOn(player), player, "blocks changed.")
+          send "{@msgprefix} creating row..."
+          make player execute command "//rowplace %arg 2% %arg 3%"
+        else: # if this runs it means the play is flying
+          send "{@msgprefix} I can't get the block you're standing on if you're flying."
+      else:
+        send "&c{@nopermission} skript.row.admin.free"
+
+        #version subcommand
+    else if arg 1 is "version":
+      wait 8 ticks
+      send "{@msgprefix} version {@Version} &8year.month.day"
+
+    else if arg 1 is not set:
+      make player execute command "/row help"
+
+    else: # this runs when all the "if arg is 'condision' fails
+      send "{@msgprefix} I don't understand &c%arg 1%&e, try %{_usage}%"
+
+
+# auto mode or one click mode. get on click event
+on rightclick holding wheat_seeds or beetroot_seeds or carrot_item or potato_item or nether_wart_item or pumpkin_seeds or melon_seeds or cane_item:
+  if {oneClickRow.%player%} is true:
+    player is sneaking
+    make player execute command "/row plant"
+
+on leftclick holding rails or any_fence:
+  if {oneClickRow.%player%} is true:
+    player is sneaking
+    make player execute command "/row place"
+
+on join:
+  set {oneClickRow.%player%} to {@defaultOneClickRow}
