@@ -4,7 +4,7 @@ Row planter is a minecraft server skript plugin that plants a row of crops in th
 
 ## TUTORIAL
 
-Stand at one end of a field holding some seeds. point your curser to the other end of the field and type `/row plant`. or you could type `row oneclick true`, look over that field then hold shift and right click!
+Stand at one end of a field holding some seeds. point your curser to the other end of the field and type `/row plant`. or you could type `/row oneclick true`, look over that field then hold shift and right click!
 
 ## COMMANDS
 
