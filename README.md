@@ -1,6 +1,6 @@
 ## WHAT IS ROW PLANTER?
 
-Row planter is a skript plugin that plants a row of crops in the direction the player is looking. It can also place a line of rails or fences or most other blocks.
+Row planter is a minecraft server skript plugin that plants a row of crops in the direction the player is looking. It can also place a line of rails or fences or most other blocks.
 
 ## TUTORIAL
 
@@ -58,6 +58,7 @@ https://forums.skunity.com/resources/aliases.27/
 * Install tim740's skAliases. https://forums.skunity.com/resources/aliases.27/
 * Downlaod row_planter.sk and put it in `yourServer/plugins/skript/scripts`.
 * Run `/skript reload all`.
+* Make sure to add the permissions to your permission manager.
 
 ### version notes
 
