@@ -47,6 +47,8 @@ Here is the full list of permissions and what they allow:
 ```
 ## DEPENDENCIES
 
+Bukket or Spigot.
+
 Row Planter depends on tim740's skAliases, which if you don't have and you skript you should get anyway.
 
 https://github.com/tim740/skAliases/releases/
